@@ -21,17 +21,27 @@ void dfs(int v = root, int p = root) {
 }
 
 bool upper(int a, int b) {
-    return tin[a] <= tin[b] && tout[a] >= tout[b];
+    return (tin[a] - tin[b]) >> 31 == 0 && (tout[a] - tout[b]) >> 31 == 1;
 }
+
+int memo[MAXLOG][MAXN];
 
 int lca(int a, int b) {
     if (upper(a, b)) return a;
     if (upper(b, a)) return b;
-    for (int l = MAXLOG - 1; l >= 0; l--)
+    if (memo[0][a] != -1 && memo[0][b] != -1) return memo[0][a];
+    for (int l = MAXLOG - 1; l >= 0; l--) {
+        if (up[l][a] != root && memo[l][up[l][a]] != -1) {
+            memo[0][a] = memo[l][up[l][a]];
+            return memo[0][a];
+        }
         if (!upper(up[l][a], b))
             a = up[l][a];
-    return up[0][a];
+    }
+    memo[0][a] = up[0][a];
+    return memo[0][a];
 }
+
 
 void addEdge(int a, int b) {
     edges[b].push_back(a);
