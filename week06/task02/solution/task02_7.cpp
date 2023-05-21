@@ -38,25 +38,9 @@ void addEdge(int a, int b) {
     edges[a].push_back(b);
 }
 
-void update(int v, int p) {
-    tin[v] = timer++;
-    up[0][v] = p;
-    for (int l = 1; l < MAXLOG; l++)
-        up[l][v] = up[l-1][up[l-1][v]];
-    for (int w : edges[v]) {
-        if (w != p) {
-            if (tin[w] < tin[v])
-                update(w, v);
-            else
-                dfs(w, v);
-        }
-    }
-    tout[v] = timer++;
-}
-
 int main() {
     int k, a, b;
-    bool sorted = true;
+    bool sorted = false;
     string op;
 
     cin >> k;
@@ -65,9 +49,8 @@ int main() {
         cin >> op >> a >> b;
         if (op == "ADD") {
             addEdge(a, b);
-            update(a, b);
-            update(b, a);
-            sorted = false;
+            if (sorted)
+                dfs(a, b);
         } else {
             if (!sorted) {
                 dfs();

@@ -49,7 +49,7 @@ void addEdge(int a, int b) {
 
 int main() {
     int k, a, b;
-    bool sorted,initialized = true;
+    bool initialized = false;
     string op;
 
     cin >> k;
@@ -58,10 +58,12 @@ int main() {
         cin >> op >> a >> b;
         if (op == "ADD") {
             addEdge(a, b);
+            if (initialized)
+                //initialized = !initialized;
+                dfs(a, b);
         } else {
             if (!initialized) {
                 dfs();
-                initialized = true;
             }
             cout << lca(a, b) << endl;
         }
