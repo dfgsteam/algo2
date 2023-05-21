@@ -1,78 +1,78 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int MAXN = 100001;
+const int MAXN = 1048576;
+vector<int> edges[MAXN];  // Adjazenzliste des Baums
+int parent[MAXN];  // Elternknoten im Baum
+int ancestor[MAXN];  // Vorfahre des Knotens im Baum
+bool visited[MAXN];  // Besuchsmarkierung des Knotens
 
-int root;
-vector<int> edges[MAXN];
-
-vector<int> visit2;
-int firstVisit[MAXN];
-int depth[MAXN];
-
-void lca_dfs(int v = root, int d = 1) {
-    firstVisit[v] = visit2.size();
-    visit2.push_back(v);
-    depth[v] = d;
-    for (int w : edges[v]) {
-        if (depth[w] != 0) continue;
-        lca_dfs(w, d+1);
-        visit2.push_back(v);
+void makeSet(int n) {
+    for (int i = 1; i <= n; i++) {
+        parent[i] = i;
+        ancestor[i] = i;
+        visited[i] = false;
     }
 }
 
-int tree[8*MAXN];
-void lca_build_tree(int v = 1, int tl = 0, int tr = visit2.size()-1) {
-    if (tl == tr)
-        tree[v] = visit2[tl];
-    else {
-        int tm = (tl + tr) / 2;
-        lca_build_tree(2*v, tl, tm);
-        lca_build_tree(2*v+1, tm+1, tr);
-        if (depth[tree[2*v]] < depth[tree[2*v+1]])
-            tree[v] = tree[2*v];
-        else
-            tree[v] = tree[2*v+1];
+int findSet(int x) {
+    if (x != parent[x]) {
+        parent[x] = findSet(parent[x]);
     }
+    return parent[x];
 }
 
-void lca_prepare() {
-    lca_dfs();
-    lca_build_tree();
+void unionSets(int x, int y) {
+    parent[y] = x;
+    ancestor[x] = x;
 }
 
-int lca_get_tree(int l, int r, int v = 1, int tl = 0, int tr = visit2.size()-1) {
-    if (l == tl && r == tr)
-        return tree[v];
-    int tm = (tl + tr) / 2;
-    if (r <= tm)
-        return lca_get_tree(l, r, 2*v, tl, tm);
-    if (l > tm)
-        return lca_get_tree(l, r, 2*v+1, tm+1, tr);
-    int lmin = lca_get_tree(l, tm, 2*v, tl, tm);
-    int rmin = lca_get_tree(tm+1, r, 2*v+1, tm+1, tr);
-    return depth[lmin] < depth[rmin] ? lmin : rmin;
+void dfs(int v) {
+    visited[v] = true;
+    for (int u : edges[v]) {
+        if (!visited[u]) {
+            dfs(u);
+            unionSets(v, u);
+            ancestor[findSet(v)] = v;
+        }
+    }
 }
 
 int lca(int a, int b) {
-    int l = min(firstVisit[a], firstVisit[b]);
-    int r = max(firstVisit[a], firstVisit[b]);
-    return lca_get_tree(l, r);
+    int root = findSet(1);
+    makeSet(root);
+    dfs(root);
+    while (a != ancestor[a]) {
+        int new_a = ancestor[a];
+        ancestor[a] = root;
+        a = new_a;
+    }
+    while (b != ancestor[b]) {
+        int new_b = ancestor[b];
+        ancestor[b] = root;
+        b = new_b;
+    }
+    return a;
+}
+
+void addEdge(int a, int b) {
+    edges[a].push_back(b);
+    edges[b].push_back(a);
 }
 
 int main() {
-    int q, n = 1;
-    cin >> q;
-    for (int i = 0; i < q; i++) {
-        string op;
-        int a, b;
+    int k, a, b;
+    bool sorted = true;
+    string op;
+
+    cin >> k;
+
+    while(k--) {
         cin >> op >> a >> b;
         if (op == "ADD") {
-            edges[a].push_back(++n);
+            addEdge(a, b);
         } else {
-            lca_prepare();
-            int lca_ab = lca(a, b);
-            cout << lca_ab << endl;
+            cout << lca(a, b) << endl;
         }
     }
     return 0;
