@@ -20,13 +20,6 @@ void dfs(int v = root, int p = root) {
     tout[v] = timer++;
 }
 
-void update(int v, int p) {
-    tin[v] = timer++;
-    up[0][v] = p;
-    for (int l = 1; l < MAXLOG; l++)
-        up[l][v] = up[l-1][up[l-1][v]];
-}
-
 bool upper(int a, int b) {
     return tin[a] <= tin[b] && tout[a] >= tout[b];
 }
@@ -43,30 +36,25 @@ int lca(int a, int b) {
 void addEdge(int a, int b) {
     edges[b].push_back(a);
     edges[a].push_back(b);
-    update(a, b);
-    update(b, a);
 }
 
 int main() {
     int k, a, b;
-    bool initialized = false;
     string op;
 
     cin >> k;
+    vector<pair<int, int>> get;
 
     while(k--) {
         cin >> op >> a >> b;
         if (op == "ADD") {
             addEdge(a, b);
-            if (initialized)
-                //initialized = !initialized;
-                dfs(a, b);
         } else {
-            if (!initialized) {
-                dfs();
-            }
-            cout << lca(a, b) << endl;
+            get.push_back({a, b});
         }
     }
+    dfs();
+    for (auto item : get)
+        cout << lca(item.first, item.second) << endl;
     return 0;
 }
